@@ -24,7 +24,7 @@ hdlApps = ichika.lib.makeHdlApps {
   top         = "my_top";
   part        = "xczu3eg-sfvc784-1-e";
   rtlDirs     = [ "rtl" ];
-  serverLocal = "10.0.0.228";
+  serverLocal = "10.0.0.228/24";
 };
 ```
 

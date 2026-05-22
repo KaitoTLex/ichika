@@ -49,7 +49,7 @@ let
 
     remote() {
       # shellcheck disable=SC2086
-      ssh $SSH_CMD "$SERVER_USER@$SERVER" "$@"
+      $SSH_CMD "$SERVER_USER@$SERVER" "$@"
     }
 
     upload_sources() {
