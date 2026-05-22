@@ -1,20 +1,21 @@
-{ pkgs
-, top
-, part
-, rtlDirs
-, constraintsFile ? "constraints.xdc"
-, serverLocal
-, serverDns       ? ""
-, serverUser      ? "vivado"
-, sshKey          ? ""
-, workBase        ? "/var/lib/vivado-remote"
+{
+  pkgs,
+  top,
+  part,
+  rtlDirs,
+  constraintsFile ? "constraints.xdc",
+  serverLocal,
+  serverDns ? "",
+  serverUser ? "runner",
+  sshKey ? "",
+  workBase ? "/var/lib/vivado-remote",
 }:
 
 let
   lib = pkgs.lib;
 
   synthTcl = pkgs.writeText "ichika-synth.tcl" (builtins.readFile ../scripts/synth.tcl);
-  implTcl  = pkgs.writeText "ichika-impl.tcl"  (builtins.readFile ../scripts/impl.tcl);
+  implTcl = pkgs.writeText "ichika-impl.tcl" (builtins.readFile ../scripts/impl.tcl);
 
   configVars = ''
     TOP=${lib.escapeShellArg top}
@@ -68,35 +69,54 @@ let
 
   synthesize = pkgs.writeShellApplication {
     name = "ichika-synthesize";
-    runtimeInputs = [ pkgs.rsync pkgs.openssh ];
+    runtimeInputs = [
+      pkgs.rsync
+      pkgs.openssh
+    ];
     checkPhase = "";
-    text = configVars + commonRuntime + ''
-      upload_sources
-      # shellcheck disable=SC2086
-      rsync -az -e "$SSH_CMD" "$SYNTH_TCL" "$SERVER_USER@$SERVER:$WORK_DIR/synth.tcl"
-      echo "==> Running synthesis on $SERVER_USER@$SERVER..."
-      remote "vivado -mode batch -nojournal -nolog -source '$WORK_DIR/synth.tcl' -tclargs '$TOP' '$PART' '$WORK_DIR/src'"
-      echo "==> Synthesis complete."
-    '';
+    text =
+      configVars
+      + commonRuntime
+      + ''
+        upload_sources
+        # shellcheck disable=SC2086
+        rsync -az -e "$SSH_CMD" "$SYNTH_TCL" "$SERVER_USER@$SERVER:$WORK_DIR/synth.tcl"
+        echo "==> Running synthesis on $SERVER_USER@$SERVER..."
+        remote "vivado -mode batch -nojournal -nolog -source '$WORK_DIR/synth.tcl' -tclargs '$TOP' '$PART' '$WORK_DIR/src'"
+        echo "==> Synthesis complete."
+      '';
   };
 
   runImpl = pkgs.writeShellApplication {
     name = "ichika-run-impl";
-    runtimeInputs = [ pkgs.rsync pkgs.openssh ];
+    runtimeInputs = [
+      pkgs.rsync
+      pkgs.openssh
+    ];
     checkPhase = "";
-    text = configVars + commonRuntime + ''
-      upload_sources
-      # shellcheck disable=SC2086
-      rsync -az -e "$SSH_CMD" "$IMPL_TCL" "$SERVER_USER@$SERVER:$WORK_DIR/impl.tcl"
-      echo "==> Running implementation pipeline on $SERVER_USER@$SERVER..."
-      remote "vivado -mode batch -nojournal -nolog -source '$WORK_DIR/impl.tcl' -tclargs '$TOP' '$PART' '$WORK_DIR/src'"
-      # shellcheck disable=SC2086
-      rsync -az -e "$SSH_CMD" "$SERVER_USER@$SERVER:$WORK_DIR/src/$TOP.bit" "./$TOP.bit"
-      echo "==> Bitstream written to ./$TOP.bit"
-    '';
+    text =
+      configVars
+      + commonRuntime
+      + ''
+        upload_sources
+        # shellcheck disable=SC2086
+        rsync -az -e "$SSH_CMD" "$IMPL_TCL" "$SERVER_USER@$SERVER:$WORK_DIR/impl.tcl"
+        echo "==> Running implementation pipeline on $SERVER_USER@$SERVER..."
+        remote "vivado -mode batch -nojournal -nolog -source '$WORK_DIR/impl.tcl' -tclargs '$TOP' '$PART' '$WORK_DIR/src'"
+        # shellcheck disable=SC2086
+        rsync -az -e "$SSH_CMD" "$SERVER_USER@$SERVER:$WORK_DIR/src/$TOP.bit" "./$TOP.bit"
+        echo "==> Bitstream written to ./$TOP.bit"
+      '';
   };
 
-in {
-  synthesize = { type = "app"; program = "${synthesize}/bin/ichika-synthesize"; };
-  "run-impl" = { type = "app"; program = "${runImpl}/bin/ichika-run-impl"; };
+in
+{
+  synthesize = {
+    type = "app";
+    program = "${synthesize}/bin/ichika-synthesize";
+  };
+  "run-impl" = {
+    type = "app";
+    program = "${runImpl}/bin/ichika-run-impl";
+  };
 }

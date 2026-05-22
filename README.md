@@ -1,8 +1,10 @@
 # ichika
 
-Nix flake library for sending HDL to a remote Vivado build server. Add it to any HDL project to get `nix run .#synthesize` and `nix run .#run-impl` without installing Vivado locally.
+A simple nix flake library for sending HDL to a remote Vivado build server. Add it to any HDL (SV perferred) project to get `nix run .#synthesize` and `nix run .#run-impl` without wasting your memory or cpu compute.
 
 ## How it works
+
+It's essentially a shell script that rsyncs, runs vivado's headless program to synthesize or implement and generates a bitstream. 
 
 `nix run .#synthesize` — rsyncs your RTL to the server, runs Vivado synthesis in batch mode, prints timing/utilization reports.
 
@@ -11,6 +13,8 @@ Nix flake library for sending HDL to a remote Vivado build server. Add it to any
 Sources are rsynced from `$PWD` on every run, so edits are picked up immediately without rebuilding the flake.
 
 ## Quick start
+
+use a minimal template to have your RTL
 
 ```sh
 nix flake init -t github:kaitotlex/ichika
@@ -21,10 +25,10 @@ Edit the generated `flake.nix`:
 ```nix
 hdlApps = ichika.lib.makeHdlApps {
   inherit pkgs;
-  top         = "my_top";
-  part        = "xczu3eg-sfvc784-1-e";
-  rtlDirs     = [ "rtl" ];
-  serverLocal = "10.0.0.228/24";
+  top         = "my_top.sv";  # where the top is 
+  part        = "xczu3eg-sfvc784-1-e"; # what kind of board your fpga is
+  rtlDirs     = [ "rtl" ]; #directory
+  serverLocal = "10.0.0.228"; # support for local and dns 
 };
 ```
 
@@ -61,7 +65,7 @@ apps = ichika.lib.makeHdlApps {
 | `constraintsFile` | `"constraints.xdc"` | XDC file path; skipped if absent |
 | `serverLocal` | required | LAN IP of the build server |
 | `serverDns` | `""` | Public DNS name (use with `ICHIKA_USE_DNS=1`) |
-| `serverUser` | `"vivado"` | SSH user on the server |
+| `serverUser` | `"runner"` | SSH user on the server |
 | `sshKey` | `""` | SSH key path; empty uses the SSH agent |
 | `workBase` | `"/var/lib/vivado-remote"` | Base directory for build artifacts on the server |
 
@@ -72,7 +76,7 @@ ICHIKA_SERVER=192.168.1.50 nix run .#run-impl   # explicit override
 ICHIKA_USE_DNS=1 nix run .#run-impl              # use serverDns
 ```
 
-## Server setup
+## Server setup (not covered in this repo)
 
 The server must run NixOS with `xilinx-flake` and have the `hdlBuild` service enabled:
 
@@ -91,4 +95,4 @@ services.vivadoServer = {
 };
 ```
 
-See [xilinx-flake](https://github.com/kaitotlex/xilinx-flake) for the full server module documentation.
+See [xilinx-flake](https://github.com/MIT-OpenCompute/xilinx-flake) for the full server-side module documentation.
