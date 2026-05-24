@@ -62,12 +62,15 @@ apps = ichika.lib.makeHdlApps {
 | `top` | required | Top module name |
 | `part` | required | Vivado FPGA part string |
 | `rtlDirs` | required | List of RTL source directories (relative to `$PWD`) |
-| `constraintsFile` | `"constraints.xdc"` | XDC file path; skipped if absent |
+| `constraintsFiles` | `[ "constraints.xdc" ]` | XDC file paths; each is rsynced and loaded by name; files that don't exist are skipped |
 | `serverLocal` | required | LAN IP of the build server |
 | `serverDns` | `""` | Public DNS name (use with `ICHIKA_USE_DNS=1`) |
-| `serverUser` | `"runner"` | SSH user on the server |
+| `serverUser` | `"runner"` | SSH user on the server — set this; the default is rarely correct |
 | `sshKey` | `""` | SSH key path; empty uses the SSH agent |
 | `workBase` | `"/var/lib/vivado-remote"` | Base directory for build artifacts on the server |
+| `synthTcl` | `null` | Path to a custom synth TCL; `null` uses ichika's built-in |
+| `implTcl` | `null` | Path to a custom impl TCL; `null` uses ichika's built-in |
+| `implTclArgs` | `[ ]` | Extra positional args appended to `-tclargs` in the impl vivado call |
 
 ## Switching server addresses
 

@@ -23,8 +23,7 @@ foreach src $srcs {
     read_verilog -sv $src
 }
 
-set xdc [file join [file dirname $srcdir] constraints.xdc]
-if {[file exists $xdc]} {
+foreach xdc [glob -nocomplain -directory [file dirname $srcdir] *.xdc] {
     read_xdc $xdc
 }
 

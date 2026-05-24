@@ -24,8 +24,12 @@
           part = "xczu3eg-sfvc784-1-e";
           rtlDirs = [ "rtl" ];
           serverLocal = "10.0.0.228";
-          # serverDns  = "build.example.com";
-          # sshKey     = "~/.ssh/id_ed25519";
+          serverUser = "vivado"; # set to your SSH user on the build server
+          # serverDns        = "build.example.com";
+          # sshKey           = "~/.ssh/id_ed25519";
+          # constraintsFiles = [ "timing.xdc" "pins.xdc" ];
+          # implTcl          = ./custom_impl.tcl;
+          # implTclArgs      = [ "/remote/path/constraints.xdc" ];
         };
       in
       {
