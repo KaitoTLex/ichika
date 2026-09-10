@@ -22,7 +22,7 @@
           inherit pkgs;
           top = "my_top";
           part = "xczu3eg-sfvc784-1-e";
-          rtlDirs = [ "rtl" ];
+          sourceDirs = [ "rtl" ];
           serverLocal = "10.0.0.228";
           serverUser = "vivado"; # set to your SSH user on the build server
           # serverDns        = "build.example.com";
